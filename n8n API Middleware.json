@@ -1,0 +1,365 @@
+{
+  "name": "n8n API Middleware",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8945c7d0-49b1-4110-8c30-f5f52c62d8d9",
+              "leftValue": "={{ $json.body.message.voice }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        240,
+        0
+      ],
+      "id": "ef917b7f-ce12-4ec5-93e1-59f3d9dfb256",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e128f8b5-b0aa-4326-bc2f-9cbd393bdd38",
+      "name": "Webhook",
+      "webhookId": "a08b1689-f4ef-4bc9-afdd-43a4f2e049a8"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.body.message.voice.file_id }}",
+        "additionalFields": {
+          "mimeType": ""
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "2bd14a29-1729-4f07-940e-10df2f597f02",
+      "name": "Get a file",
+      "webhookId": "d0f25072-3e68-4009-9b16-5eda62a6f833",
+      "alwaysOutputData": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "F7oTmU7y1NQpoL0Q",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  if (item.binary && item.binary.data) {\n    item.binary.data.fileName = 'audio.ogg';\n    item.binary.data.mimeType = 'audio/ogg';\n    item.binary.data.fileExtension = 'ogg';\n  }\n}\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        0
+      ],
+      "id": "5ddc7b1d-baf3-4896-ac8c-97ef18434e72",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Webhook').item.json.body.message.from.id }}",
+        "text": "={{ $json.data.outputs.result }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1264,
+        -128
+      ],
+      "id": "b0d6ad19-0c7e-4145-b27b-b23f2f066dba",
+      "name": "Send a text message",
+      "webhookId": "aa4f35e4-9e9a-45a6-bceb-1c5f891ebecb",
+      "credentials": {
+        "telegramApi": {
+          "id": "F7oTmU7y1NQpoL0Q",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.dify.ai/v1/workflows/run",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inputs\": {\n    \"transcript\": \"{{ $json.text }}\"\n  },\n  \"response_mode\": \"blocking\",\n  \"user\": \"n8n_telegram_bot\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "33194fa1-e00f-4e8e-82ae-a4a00a7de39f",
+      "name": "Dify Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "EqyzoUhv6ADjABWb",
+          "name": "Header Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "model",
+              "value": "whisper-large-v3"
+            },
+            {
+              "name": "language",
+              "value": "ru"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        848,
+        0
+      ],
+      "id": "478818e1-ea22-463d-939b-251877bcf4ba",
+      "name": "Groq Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ASEFolkuGnxkYMQw",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appVmJjaJ2GSmWKON",
+          "mode": "list",
+          "cachedResultName": "n8n_integration_base",
+          "cachedResultUrl": "https://airtable.com/appVmJjaJ2GSmWKON"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblNNdYErw0o3xWnL",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appVmJjaJ2GSmWKON/tblNNdYErw0o3xWnL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "City": "={{ JSON.parse($json.data.outputs.raw_json).city }}",
+            "Budget": "={{ Number(JSON.parse($json.data.outputs.raw_json).budget) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "City",
+              "displayName": "City",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Budget",
+              "displayName": "Budget",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Todo",
+                  "value": "Todo"
+                },
+                {
+                  "name": "In progress",
+                  "value": "In progress"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1264,
+        80
+      ],
+      "id": "a1dfe2bb-acea-46ce-8728-a4a5c04b8cd9",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "MC3HQeI8yLXRZMQE",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Groq Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dify Request": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Request": {
+      "main": [
+        [
+          {
+            "node": "Dify Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "62e956e4-3e43-465b-a332-b36b56f705cb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b99bad5abf1576dd0f90448e78f66d38372cfe0af0830a51d4665ac0be5f7699"
+  },
+  "id": "Z02ES4j5t10UB8XJ",
+  "tags": []
+}

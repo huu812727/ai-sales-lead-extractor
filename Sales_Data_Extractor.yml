@@ -1,0 +1,319 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  icon_type: emoji
+  mode: workflow
+  name: Sales_Data_Extractor
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openrouter:0.0.41@99cd79bc154370c899547ce17cea8edc569e86c06c795d4f8577b5c42eb712c3
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 50
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1773389699574-source-1773390907124-target
+      source: '1773389699574'
+      sourceHandle: source
+      target: '1773390907124'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: http-request
+      id: 1773390907124-source-1773395946009-target
+      source: '1773390907124'
+      sourceHandle: source
+      target: '1773395946009'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: llm
+      id: 1773395946009-source-1773396186936-target
+      source: '1773395946009'
+      sourceHandle: source
+      target: '1773396186936'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: 1773396186936-source-1773393252579-target
+      source: '1773396186936'
+      sourceHandle: source
+      target: '1773393252579'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: Начало
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: Текст звонка
+          max_length: 10000
+          options: []
+          placeholder: ''
+          required: true
+          type: paragraph
+          variable: transcript
+      height: 109
+      id: '1773389699574'
+      position:
+        x: -381
+        y: 258
+      positionAbsolute:
+        x: -381
+        y: 258
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1773389699574'
+          - transcript
+        desc: Извлечение параметров
+        model:
+          completion_params:
+            response_format: json_object
+            temperature: 0.7
+          mode: chat
+          name: openai/gpt-4o-mini
+          provider: langgenius/openrouter/openrouter
+        prompt_template:
+        - id: e0684aba-15be-4558-ac6b-6beb0b2aac59
+          role: system
+          text: 'Ты — AI-экстрактор данных для CRM. Твоя задача: проанализировать
+            текст звонка и извлечь данные строго в формате JSON.
+
+            Алгоритм (Chain-of-Thought):
+
+            Найди локацию (город).
+
+            Найди сумму (бюджет). Если написано «полмиллиона», пиши 500000.
+
+            Оцени статус: если клиент хочет «записываться» или «покупать» — статус
+            "hot".
+
+            Данные для анализа: > {{#1773389699574.transcript#}}
+
+            Формат ответа: {"city": "string", "budget": number, "status": "string"}'
+        selected: false
+        structured_output_enabled: false
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 116
+      id: '1773390907124'
+      position:
+        x: -79
+        y: 259
+      positionAbsolute:
+        x: -79
+        y: 259
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        outputs:
+        - value_selector:
+          - '1773396186936'
+          - text
+          value_type: string
+          variable: result
+        - value_selector:
+          - '1773390907124'
+          - text
+          value_type: string
+          variable: raw_json
+        selected: false
+        title: Вывод
+        type: end
+      height: 114
+      id: '1773393252579'
+      position:
+        x: 816
+        y: 253
+      positionAbsolute:
+        x: 816
+        y: 253
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - id: key-value-71
+            key: ''
+            type: text
+            value: '{{#1773390907124.text#}}'
+          type: json
+        headers: ''
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        ssl_verify: true
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: HTTP-запрос
+        type: http-request
+        url: https://webhook.site/d8f3f8a9-10a0-4f8b-99f9-7a28ac63d211
+        variables: []
+      height: 154
+      id: '1773395946009'
+      position:
+        x: 226
+        y: 259
+      positionAbsolute:
+        x: 226
+        y: 259
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1773390907124'
+          - text
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: openai/gpt-4o-mini
+          provider: langgenius/openrouter/openrouter
+        prompt_template:
+        - id: 2bf72bf7-9391-495d-ace2-b54789f2b02d
+          role: system
+          text: 'Ты — редактор голосовых интерфейсов. Твоя задача: перевести данные
+            из JSON в одну вежливую фразу для синтезатора речи.
+
+            Данные: {{#1773390907124.text#}}
+
+            Строгие правила:
+
+            Никаких цифр — пиши всё словами (не "500", а "пятьсот").
+
+            Никаких спецсимволов ($, %, #, /).
+
+            Убери аббревиатуры (не "руб.", а "рублей").
+
+            Фраза должна быть короткой и читаться на одном дыхании.
+
+            Пример: "Благодарю за информацию. Мы зафиксировали ваш бюджет в размере
+            триста тысяч рублей для города Санкт-Петербург. Скоро свяжемся!"'
+        selected: false
+        title: Voice_Formatter
+        type: llm
+        vision:
+          enabled: false
+      height: 88
+      id: '1773396186936'
+      position:
+        x: 516
+        y: 253
+      positionAbsolute:
+        x: 516
+        y: 253
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 512.3072423350076
+      y: 116.35413423633582
+      zoom: 0.9500456957564845
+  rag_pipeline_variables: []
