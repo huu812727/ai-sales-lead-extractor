@@ -9,7 +9,7 @@ This project strictly follows the **Separation of Concerns** principle:
 * **AI Orchestration Layer (Dify):** Manages LLM prompts, Chain-of-Thought reasoning, and JSON generation.
 
 ### High-Level Business Logic
-![Architecture Diagram](Architecture.png)
+![Architecture Diagram](Architecture_logic.png)
 
 ### Low-Level Implementation (n8n)
 ![n8n Workflow](n8n.png)
